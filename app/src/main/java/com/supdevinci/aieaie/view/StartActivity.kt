@@ -1,42 +1,74 @@
 package com.supdevinci.aieaie.view
 
-import android.content.Intent
 import android.os.Bundle
+import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import com.supdevinci.aieaie.R
-import com.supdevinci.aieaie.adapters.ConversationsAdapter
-import com.supdevinci.aieaie.model.Conversation
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.Surface
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import androidx.room.Room
+import com.supdevinci.aieaie.database.ConversationDatabase
+import com.supdevinci.aieaie.presentation.AddConversationScreen
+import com.supdevinci.aieaie.presentation.ConversationScreen
+import com.supdevinci.aieaie.ui.theme.AIEAIETheme
+import com.supdevinci.aieaie.viewmodel.ConversationViewModel
 
 class StartActivity : AppCompatActivity() {
 
-    private lateinit var conversationsAdapter: ConversationsAdapter
-    private lateinit var recyclerView: RecyclerView
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_start)
-
-        recyclerView = findViewById(R.id.conversationsRecyclerView)
-        recyclerView.layoutManager = LinearLayoutManager(this)
-        conversationsAdapter = ConversationsAdapter { conversation ->
-            val intent = Intent(this, MainActivity::class.java).apply {
-                putExtra("conversation_id", conversation.id)
-            }
-            startActivity(intent)
-        }
-
-        recyclerView.adapter = conversationsAdapter
-
-        loadConversations()
+    private val database by lazy {
+        Room.databaseBuilder(
+            applicationContext,
+            ConversationDatabase::class.java,
+            "conversation.db"
+        ).build()
     }
 
-    private fun loadConversations() {
-        val fakeConversations = listOf(
-            Conversation("1", "Conversation 1"),
-            Conversation("2", "Conversation 2"),
-        )
-        conversationsAdapter.submitList(fakeConversations)
+    private val viewModel by viewModels<ConversationViewModel> (
+        factoryProducer = {
+            object : ViewModelProvider.Factory {
+                override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                    return ConversationViewModel(database.dao) as T
+                }
+            }
+        }
+    )
+
+    override fun onCreate(savedinstanceState: Bundle?) {
+        super.onCreate(savedinstanceState)
+        setContent {
+            AIEAIETheme {
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                ) {
+                    val state by viewModel.state.collectAsState()
+                    val navController = rememberNavController()
+
+                    NavHost(navController = navController, startDestination = "conversations") {
+                        composable("conversations") {
+                            ConversationScreen(
+                                state = state,
+                                navController = navController,
+                                onEvent = viewModel::onEvent
+                            )
+                        }
+                        composable("add_conversation") {
+                            AddConversationScreen(
+                                state = state,
+                                navController = navController,
+                                onEvent = viewModel::onEvent
+                            )
+                        }
+                    }
+                }
+            }
+        }
     }
 }

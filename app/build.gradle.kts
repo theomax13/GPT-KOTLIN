@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsKotlinAndroid)
+    id("kotlin-kapt")
 }
 
 android {
@@ -76,4 +77,15 @@ dependencies {
     implementation ("com.squareup.okhttp3:logging-interceptor:3.8.0")
     implementation ("androidx.compose.runtime:runtime-livedata:1.0.5")
     implementation ("androidx.lifecycle:lifecycle-livedata-ktx:2.3.1")
+
+    // Room
+    val roomVersion = "2.6.0"
+    implementation("androidx.room:room-ktx:$roomVersion")
+    kapt("androidx.room:room-compiler:$roomVersion")
+
+    // Navigation
+    implementation("androidx.navigation:navigation-compose:2.7.5")
+
+    // Extended Icons
+    implementation("androidx.compose.material:material-icons-extended:1.5.4")
 }
