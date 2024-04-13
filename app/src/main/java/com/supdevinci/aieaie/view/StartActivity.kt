@@ -18,6 +18,7 @@ import androidx.room.Room
 import com.supdevinci.aieaie.database.ConversationDatabase
 import com.supdevinci.aieaie.presentation.AddConversationScreen
 import com.supdevinci.aieaie.presentation.ConversationScreen
+import com.supdevinci.aieaie.presentation.ConversationsScreen
 import com.supdevinci.aieaie.ui.theme.AIEAIETheme
 import com.supdevinci.aieaie.viewmodel.ConversationViewModel
 
@@ -53,10 +54,11 @@ class StartActivity : AppCompatActivity() {
 
                     NavHost(navController = navController, startDestination = "conversations") {
                         composable("conversations") {
-                            ConversationScreen(
+                            ConversationsScreen(
                                 state = state,
                                 navController = navController,
-                                onEvent = viewModel::onEvent
+                                onEvent = viewModel::onEvent,
+                                viewModel = viewModel
                             )
                         }
                         composable("add_conversation") {
@@ -65,6 +67,12 @@ class StartActivity : AppCompatActivity() {
                                 navController = navController,
                                 onEvent = viewModel::onEvent
                             )
+                        }
+                        composable("chat_screen/{conversationId}") { backStackEntry ->
+                            val conversationId =
+                                backStackEntry.arguments?.getString("conversationId")
+                            ConversationScreen(conversationId)
+                            //TODO Afficher l'histoire de la conversation avant la possibilité d'envoie de nouveaux messages
                         }
                     }
                 }

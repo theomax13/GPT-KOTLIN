@@ -9,4 +9,6 @@ sealed interface ConversationEvent {
 
     data class AddConversation(val conversationDB: ConversationDB): ConversationEvent
 
+    data class SelectConversation(val conversationDB: ConversationDB): ConversationEvent
+
 }
